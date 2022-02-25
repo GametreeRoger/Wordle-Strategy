@@ -12,14 +12,20 @@ class Wordle {
     private var wrongLocationChars: WrongType?
     private var notExistChars: CharArray?
     private var existCharArray = CharArray()
-    
-    var allText = [String]()
+    private var wrongLocationSet = CharSet()
+    private var allText = [String]()
     
     init(correctLocationChars: CorrectType?, wrongLocationChars: WrongType?, notExistChars: CharArray?) {
         self.correctLocationChars = correctLocationChars
         self.wrongLocationChars = wrongLocationChars
         self.notExistChars = notExistChars
         existCharArray = getExistsCharacter().sorted()
+        if let wrongLocationChars = wrongLocationChars {
+            wrongLocationSet = CharSet()
+            for (_, chars) in wrongLocationChars {
+                wrongLocationSet = wrongLocationSet.union(CharSet(chars))
+            }
+        }
 //        print(existCharArray)
     }
     
@@ -60,7 +66,7 @@ class Wordle {
     
     private func guess(index: Int, text: CharArray) {
         guard index != MAX_CHARACTER_COUNT else {
-            if checkTextValid(text: text) {
+            if checkTextValid(text: text) && wrongLocationSet.isSubset(of: text) {
                 allText.append(String(text))
             }
             return
@@ -85,20 +91,24 @@ class Wordle {
         var guessString = Array<Character>(repeating: EMPTY_CHARACTER, count: MAX_CHARACTER_COUNT)
         // 收集所有排列組合的字串
         guess(index: 0, text: guessString)
-
-        print(allText.joined(separator: ", "))
+        if allText.count > 0 {
+            print("總共有\(allText.count)組單字")
+            print(allText.joined(separator: ", "))
+        } else {
+            print("沒有可以組合的單字")
+        }
     }
 }
 
 let wordle = Wordle(correctLocationChars: [
-    1: "a",
-    2: "c",
-    3: "i",
-    4: "t"
+    0: "v",
+    1: "i"
 ], wrongLocationChars: [
-    0: ["a", "c"]
+    2: ["d"],
+    3: ["d"]
 ], notExistChars: [
-    "n", "k", "l", "e", "b", "u", "s", "h", "o", "r", "d", "v"
+    "a", "n", "k", "l", "e", "b", "r", "u", "s", "h", "c", "y", "f", "g", "t", "o"
 ])
 
 wordle.play()
+
